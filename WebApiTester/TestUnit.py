@@ -1,10 +1,12 @@
-from typing import List, Dict, Callable, Any
+from typing import List, Dict, Callable, Any, Union
 from enum import Enum
+from requests import Response
 
 
-class HTTPMethod(Enum):
+class Method(Enum):
     GET = "GET"
     POST = "POST"
+    PUT = "PUT"
     PATCH = "PATCH"
     HEAD = "HEAD"
     DELETE = "DELETE"
@@ -15,19 +17,20 @@ class Unit:
     headers: Dict[str, str] = {}
     query: Dict[str, str] = {}
     fail_callable: Callable = None
-    hooks: List[Callable] = None
+    hooks: List[Callable[[Response], None]] = None
     description: str = ""
+    data: str = ""
 
     def add_hooks(self, h: Callable):
         self.hooks.append(h)
 
-    def notify(self, x: Any):
+    def notify(self, x: Callable[[Response], None]):
         if not self.description is None and self.description != "":
             print("        description: {}".format(self.description))
         for f in self.hooks:
             f(x)
 
-    def add_headers(self, h: Dict[str, str]) -> None:
+    def add_header(self, h: Dict[str, str]) -> None:
         self.headers.update(h)
 
     def add_query(self, q: Dict[str, str]) -> None:
@@ -43,25 +46,28 @@ class Unit:
 
 
 class Api(Unit):
-    method: HTTPMethod
+    method: Method
 
-    def __init__(self, path: str, method: HTTPMethod, h: Dict[str, str] = {}, query: Dict[str, str] = {}, hooks: List[Callable] = [], description: str = "") -> None:
+    def __init__(self, path: str, method: Method, h: Dict[str, str] = {}, query: Dict[str, str] = {}, hooks: List[Callable[[Response], None]] = [], fail: Callable[[Response], None] = None, data: Union[object, str] = None, description: str = "") -> None:
         super()
         self.path = path
         self.method = method
         self.headers = h
         self.query = query
         self.hooks = hooks
+        self.fail_callable = fail
+        self.data = data
         self.description = description
 
 
 class Module(Unit):
-    def __init__(self, path: str, headers: Dict[str, str] = {}, query: Dict[str, str] = {}, hooks: List[Callable] = [], apis: List[Api] = [], description: str = "") -> None:
+    def __init__(self, path: str, headers: Dict[str, str] = {}, query: Dict[str, str] = {}, hooks: List[Callable[[Response], None]] = [], fail: Callable[[Response], None] = None, apis: List[Api] = [], description: str = "") -> None:
         super()
         self.path = path
         self.headers = headers
         self.query = query
         self.hooks = hooks
+        self.fail_callable = fail
         self.apis: List[Api] = apis
         self.description = description
 
@@ -72,13 +78,14 @@ class Module(Unit):
 class WebSite(Unit):
     verify: bool
 
-    def __init__(self, host: str, headers: Dict[str, str] = {}, query: Dict[str, str] = {}, verfiy_cert: bool = True, hooks: List[Callable] = [], modules: List[Module] = [], description: str = "") -> None:
+    def __init__(self, host: str, headers: Dict[str, str] = {}, query: Dict[str, str] = {}, verfiy_cert: bool = True, hooks: List[Callable[[Response], None]] = [], fail: Callable[[Response], None] = None, modules: List[Module] = [], description: str = "") -> None:
         super()
         self.path = host
         self.headers = headers
         self.query = query
         self.verify = verfiy_cert
         self.hooks = hooks
+        self.fail_callable = fail
         self.modules: List[Module] = modules
         self.description = description
 
