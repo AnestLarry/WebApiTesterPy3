@@ -2,6 +2,8 @@ from typing import List, Dict, Callable, Any, Union
 from enum import Enum
 from requests import Response
 
+from WebApiTester.utils import not_empty
+
 
 class Method(Enum):
     GET = "GET"
@@ -87,8 +89,8 @@ class Module(Unit):
     def __iter__(self):
         yield from {
             "path": self.path,
-            "headers": dict(self.headers),
-            "query": dict(self.query),
+            "headers": self.headers,
+            "query": self.query,
             "apis": [dict(x) for x in self.apis],
             "description": self.description
         }.items()

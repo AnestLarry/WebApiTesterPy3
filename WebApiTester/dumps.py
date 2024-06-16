@@ -1,4 +1,6 @@
+import json
 from WebApiTester.TestUnit import *
+import copy
 
 
 class DumpBase:
@@ -25,7 +27,7 @@ class ApiDump(DumpBase):
     def __iter__(self):
         yield from {
             "name": self.name,
-            "content": dict(self.content),
+            "content": {k: v for k, v in dict(self.content).items() if not_empty(v)},
             "status": self.status
         }.items()
 
@@ -37,13 +39,14 @@ class ModuleDump(DumpBase):
 
     def __init__(self, name: str, content: Module) -> None:
         self.name = name
-        self.content = content
+        self.content = copy.deepcopy(content)
+        self.content.apis = []
 
     def __iter__(self):
         yield from {
             "name": self.name,
-            "content": dict(self.content),
-            "apis": [dict(x) for x in self.apis]
+            "content": {k: v for k, v in dict(self.content).items() if not_empty(v)},
+            "apis": [{k: v for k, v in dict(api).items() if not_empty(v)} for api in self.apis]
         }.items()
 
 
@@ -54,13 +57,14 @@ class WebSiteDump(DumpBase):
 
     def __init__(self, name: str, content: WebSite) -> None:
         self.name = name
-        self.content = content
+        self.content = copy.deepcopy(content)
+        self.content.modules = []
 
     def __iter__(self):
         yield from {
             "name": self.name,
-            "content": dict(self.content),
-            "modules": [dict(x) for x in self.modules]
+            "content": {k: v for k, v in dict(self.content).items() if not_empty(v)},
+            "modules": [{k: v for k, v in dict(module).items() if not_empty(v)} for module in self.modules]
         }.items()
 
 
@@ -75,7 +79,7 @@ class RuntimeDump(DumpBase):
     def __iter__(self):
         yield from {
             "name": self.name,
-            "websites": [dict(website) for website in self.websites]
+            "websites": [{k: v for k, v in dict(website).items() if not_empty(v)} for website in self.websites]
         }.items()
 
     def __str__(self) -> str:
