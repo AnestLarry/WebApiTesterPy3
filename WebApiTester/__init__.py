@@ -1,7 +1,10 @@
+from datetime import datetime
+import json
 import requests
 from requests import Response
 from typing import List, Dict
 from WebApiTester.TestUnit import *
+from WebApiTester.dumps import RuntimeDump, WebSiteDump, ModuleDump, ApiDump
 
 
 class client:
@@ -44,11 +47,18 @@ class TesterEngine:
         return r
 
     def start(self, dumpNeed: bool = False) -> None:
+        dump_res = RuntimeDump(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         print("Tester Starting...")
         for ws in self.web_sites:
             print("\n\n  WebSite[{}]:".format(ws.path))
+            if dumpNeed:
+                dump_res.websites.append(WebSiteDump(
+                    "{}-{}".format(self.web_sites.index(ws), ws.path), ws))
             for m in ws.modules:
                 print("\n    Module[{}]:".format(m.path))
+                if dumpNeed:
+                    dump_res.websites[-1].modules.append(ModuleDump(
+                        "{}-{}".format(ws.modules.index(m), m.path), m))
                 for x in m.apis:
                     print("\n      Api[\"{}\" {}]:".format(x.path, x.method))
                     res: Response = self.client.do(
@@ -61,6 +71,9 @@ class TesterEngine:
                         body=x.data,
                         verify=ws.verify
                     )
+                    if dumpNeed:
+                        dump_res.websites[-1].modules[-1].apis.append(ApiDump(
+                            "{}-{}".format(m.apis.index(x), x.path), x, res.status_code == 200))
                     if res.status_code == 200:
                         x.notify(res)
                         m.notify(res)
@@ -69,3 +82,6 @@ class TesterEngine:
                         x.fail(res)
                         m.fail(res)
                         ws.fail(res)
+        if dumpNeed:
+            with open("{}.json".format(datetime.now().strftime("%Y-%m-%d %H-%M-%S")), "w") as f:
+                f.write(json.dumps(dict(dump_res)))

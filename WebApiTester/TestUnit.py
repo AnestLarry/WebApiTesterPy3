@@ -59,6 +59,16 @@ class Api(Unit):
         self.data = data
         self.description = description
 
+    def __iter__(self):
+        yield from {
+            "path": self.path,
+            "method": self.method.value,
+            "headers": dict(self.headers),
+            "query": dict(self.query),
+            "data": self.data,
+            "description": self.description
+        }.items()
+
 
 class Module(Unit):
     def __init__(self, path: str, headers: Dict[str, str] = {}, query: Dict[str, str] = {}, hooks: List[Callable[[Response], None]] = [], fail: Callable[[Response], None] = None, apis: List[Api] = [], description: str = "") -> None:
@@ -73,6 +83,15 @@ class Module(Unit):
 
     def add_apis(self, x: List[Api]):
         self.apis.extend(x)
+
+    def __iter__(self):
+        yield from {
+            "path": self.path,
+            "headers": dict(self.headers),
+            "query": dict(self.query),
+            "apis": [dict(x) for x in self.apis],
+            "description": self.description
+        }.items()
 
 
 class WebSite(Unit):
@@ -91,3 +110,13 @@ class WebSite(Unit):
 
     def add_modules(self, m: Module):
         self.modules.extend(m)
+
+    def __iter__(self):
+        yield from {
+            "path": self.path,
+            "headers": dict(self.headers),
+            "query": dict(self.query),
+            "verify": self.verify,
+            "modules": [dict(x) for x in self.modules],
+            "description": self.description
+        }.items()
