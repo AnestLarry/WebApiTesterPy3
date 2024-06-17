@@ -1,8 +1,9 @@
+from datetime import datetime
 from typing import List, Dict, Callable, Any, Union
 from enum import Enum
 from requests import Response
 
-from WebApiTester.utils import not_empty
+from WebApiTester import utils
 
 
 class Method(Enum):
@@ -48,17 +49,19 @@ class Unit:
         self.fail_callable = x
 
     def fail(self, x: Any) -> Union[str, Dict, None]:
-        print(self.__class__+" is fail")
         if not self.fail_callable is None:
+            print("{}: {} is fail".format(
+                datetime.now().strftime("%Y-%m-%d %H-%M-%S"), self.__class__.__name__))
             return self.fail_callable(x)
 
 
 class Api(Unit):
     method: Method
+    verify: Callable[[Response], bool] = None
 
     def __init__(self, path: str, method: Method, headers: Dict[str, str] = {}, query: Dict[str, str] = {},
                  hooks: List[Callable[[Response], Union[str, Dict, List, None]]] = [], fail: Callable[[Response], Union[str, Dict, List, None]] = None,
-                 data: Union[object, str] = None, description: str = "") -> None:
+                 verify: Callable[[Response], bool] = None, data: Union[object, str] = None, description: str = "") -> None:
         super()
         self.path = path
         self.method = method
@@ -68,6 +71,10 @@ class Api(Unit):
         self.fail_callable = fail
         self.data = data
         self.description = description
+        if verify is None:
+            self.verify = utils.status_code_eq_200
+        else:
+            self.verify = verify
 
     def __iter__(self):
         yield from {
