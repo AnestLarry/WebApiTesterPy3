@@ -75,8 +75,10 @@ class TesterEngine:
                         dump_res.websites[-1].modules[-1].apis.append(ApiDump(
                             "{}-{}".format(m.apis.index(x), x.path), x, x.verify(res)))
                         if x.verify(res):
-                            x_res, m_res, ws_res = x.notify(
-                                res), m.notify(res), ws.notify(res)
+                            x_res = [i for i in x.notify(res) if not i is None]
+                            m_res = [i for i in m.notify(res) if not i is None]
+                            ws_res = [i for i in ws.notify(
+                                res) if not i is None]
                             if len(x_res) > 0:
                                 dump_res.websites[-1].modules[-1].apis[-1].hooks_results.extend(
                                     x_res)

@@ -2,7 +2,7 @@ import json
 from WebApiTester.TestUnit import *
 import copy
 
-
+from WebApiTester.utils import not_empty
 class DumpBase:
     def __str__(self) -> str:
         return json.dumps(dict(self))
