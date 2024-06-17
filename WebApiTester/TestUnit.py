@@ -18,19 +18,25 @@ class Unit:
     path: str
     headers: Dict[str, str] = {}
     query: Dict[str, str] = {}
-    fail_callable: Callable = None
-    hooks: List[Callable[[Response], None]] = None
+    fail_callable: Callable[[Response], Union[str, Dict, None]] = None
+    hooks: List[Callable[[Response], Union[str, Dict, List, None]]] = None
     description: str = ""
     data: str = ""
 
     def add_hooks(self, h: Callable):
         self.hooks.append(h)
 
-    def notify(self, x: Callable[[Response], None]):
+    def notify(self, x: Callable[[Response], Union[str, Dict, List, None]]) -> List[Union[str, Dict, List, None]]:
         if not self.description is None and self.description != "":
             print("        description: {}".format(self.description))
+        res: List[Union[str, Dict, None]] = []
         for f in self.hooks:
-            f(x)
+            try:
+                res.append(f(x))
+            except Exception as e:
+                res.append({"name": e.__class__.__name__, "message": str(
+                    e), "traceback": str(e.__traceback__)})
+        return res
 
     def add_header(self, h: Dict[str, str]) -> None:
         self.headers.update(h)
@@ -38,23 +44,25 @@ class Unit:
     def add_query(self, q: Dict[str, str]) -> None:
         self.query.update(q)
 
-    def bind_fail(self, x: Callable):
+    def bind_fail(self, x: Callable[[Response], Union[str, Dict, None]]) -> None:
         self.fail_callable = x
 
-    def fail(self, x: Any):
+    def fail(self, x: Any) -> Union[str, Dict, None]:
         print(self.__class__+" is fail")
         if not self.fail_callable is None:
-            self.fail_callable(x)
+            return self.fail_callable(x)
 
 
 class Api(Unit):
     method: Method
 
-    def __init__(self, path: str, method: Method, h: Dict[str, str] = {}, query: Dict[str, str] = {}, hooks: List[Callable[[Response], None]] = [], fail: Callable[[Response], None] = None, data: Union[object, str] = None, description: str = "") -> None:
+    def __init__(self, path: str, method: Method, headers: Dict[str, str] = {}, query: Dict[str, str] = {},
+                 hooks: List[Callable[[Response], Union[str, Dict, List, None]]] = [], fail: Callable[[Response], Union[str, Dict, List, None]] = None,
+                 data: Union[object, str] = None, description: str = "") -> None:
         super()
         self.path = path
         self.method = method
-        self.headers = h
+        self.headers = headers
         self.query = query
         self.hooks = hooks
         self.fail_callable = fail
@@ -73,7 +81,8 @@ class Api(Unit):
 
 
 class Module(Unit):
-    def __init__(self, path: str, headers: Dict[str, str] = {}, query: Dict[str, str] = {}, hooks: List[Callable[[Response], None]] = [], fail: Callable[[Response], None] = None, apis: List[Api] = [], description: str = "") -> None:
+    def __init__(self, path: str, headers: Dict[str, str] = {}, query: Dict[str, str] = {}, hooks: List[Callable[[Response], Union[str, Dict, List, None]]] = [],
+                 fail: Callable[[Response], Union[str, Dict, List, None]] = None, apis: List[Api] = [], description: str = "") -> None:
         super()
         self.path = path
         self.headers = headers
@@ -99,7 +108,9 @@ class Module(Unit):
 class WebSite(Unit):
     verify: bool
 
-    def __init__(self, host: str, headers: Dict[str, str] = {}, query: Dict[str, str] = {}, verfiy_cert: bool = True, hooks: List[Callable[[Response], None]] = [], fail: Callable[[Response], None] = None, modules: List[Module] = [], description: str = "") -> None:
+    def __init__(self, host: str, headers: Dict[str, str] = {}, query: Dict[str, str] = {}, verfiy_cert: bool = True,
+                 hooks: List[Callable[[Response], Union[str, Dict, List, None]]] = [], fail: Callable[[Response], Union[str, Dict, List, None]] = None,
+                 modules: List[Module] = [], description: str = "") -> None:
         super()
         self.path = host
         self.headers = headers

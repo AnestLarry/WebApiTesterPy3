@@ -74,14 +74,36 @@ class TesterEngine:
                     if dumpNeed:
                         dump_res.websites[-1].modules[-1].apis.append(ApiDump(
                             "{}-{}".format(m.apis.index(x), x.path), x, res.status_code == 200))
-                    if res.status_code == 200:
-                        x.notify(res)
-                        m.notify(res)
-                        ws.notify(res)
+                        if res.status_code == 200:
+                            dump_res.websites[-1].modules[-1].apis[-1].hooks_results.extend(
+                                x.notify(res)
+                            )
+                            dump_res.websites[-1].modules[-1].hooks_results.extend(
+                                m.notify(res)
+                            )
+                            dump_res.websites[-1].hooks_results.extend(
+                                ws.notify(res)
+                            )
+                        else:
+                            dump_res.websites[-1].modules[-1].apis[-1].hooks_results.append(
+                                x.fail(res)
+                            )
+                            dump_res.websites[-1].modules[-1].hooks_results.append(
+                                m.fail(res)
+                            )
+                            dump_res.websites[-1].hooks_results.append(
+                                ws.fail(res)
+                            )
+
                     else:
-                        x.fail(res)
-                        m.fail(res)
-                        ws.fail(res)
+                        if res.status_code == 200:
+                            x.notify(res)
+                            m.notify(res)
+                            ws.notify(res)
+                        else:
+                            x.fail(res)
+                            m.fail(res)
+                            ws.fail(res)
         if dumpNeed:
-            with open("{}.json".format(datetime.now().strftime("%Y-%m-%d %H-%M-%S")), "w") as f:
+            with open("{}.json".format( datetime.now().strftime("%Y-%m-%d %H-%M-%S")), "w") as f:
                 f.write(json.dumps(dict(dump_res)))

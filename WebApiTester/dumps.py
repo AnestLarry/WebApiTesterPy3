@@ -18,17 +18,20 @@ class ApiDump(DumpBase):
     name: str
     content: Api
     status: bool
+    hooks_results: list[Union[str, Dict, None]] = []
 
     def __init__(self, name: str, content: Module, status: bool) -> None:
         self.name = name
         self.content = content
         self.status = status
+        self.hooks_results = []
 
     def __iter__(self):
         yield from {
             "name": self.name,
             "content": {k: v for k, v in dict(self.content).items() if not_empty(v)},
-            "status": self.status
+            "status": self.status,
+            "hooks_results": self.hooks_results
         }.items()
 
 
@@ -36,17 +39,20 @@ class ModuleDump(DumpBase):
     name: str
     content: Module
     apis: list[ApiDump] = []
+    hooks_results: list[Union[str, Dict, None]] = []
 
     def __init__(self, name: str, content: Module) -> None:
         self.name = name
         self.content = copy.deepcopy(content)
         self.content.apis = []
+        self.hooks_results = []
 
     def __iter__(self):
         yield from {
             "name": self.name,
             "content": {k: v for k, v in dict(self.content).items() if not_empty(v)},
-            "apis": [{k: v for k, v in dict(api).items() if not_empty(v)} for api in self.apis]
+            "apis": [{k: v for k, v in dict(api).items() if not_empty(v)} for api in self.apis],
+            "hooks_results": self.hooks_results
         }.items()
 
 
@@ -54,17 +60,20 @@ class WebSiteDump(DumpBase):
     name: str
     content: WebSite
     modules: list[ModuleDump] = []
+    hooks_results: list[Union[str, Dict, None]] = []
 
     def __init__(self, name: str, content: WebSite) -> None:
         self.name = name
         self.content = copy.deepcopy(content)
         self.content.modules = []
+        self.hooks_results = []
 
     def __iter__(self):
         yield from {
             "name": self.name,
             "content": {k: v for k, v in dict(self.content).items() if not_empty(v)},
-            "modules": [{k: v for k, v in dict(module).items() if not_empty(v)} for module in self.modules]
+            "modules": [{k: v for k, v in dict(module).items() if not_empty(v)} for module in self.modules],
+            "hooks_results": self.hooks_results
         }.items()
 
 
