@@ -12,22 +12,18 @@ class client:
         pass
 
     def do(self, url: str, method: Method, headers: Dict[str, str] = {}, query: Dict[str, str] = {}, body: Dict[str, str] = {}, verify=True) -> Response:
-        res: Response
-        if method == Method.GET:
-            res = requests.get(
-                url=url, headers=headers, params=query, verify=verify)
-        elif method == Method.POST:
-            res = requests.post(
-                url=url, headers=headers, params=query, data=body, verify=verify)
-        elif method == Method.PUT:
-            res = requests.put(
-                url=url, headers=headers, params=query, data=body, verify=verify)
-        elif method == Method.PATCH:
-            res = requests.patch(
-                url=url, headers=headers, params=query, data=body, verify=verify)
-        else:
-            raise "The [{}] method is not currently supported".format(method)
-        return res
+        match method:
+            case Method.GET:
+                return requests.get(url=url, headers=headers, params=query, verify=verify)
+            case Method.POST:
+                return requests.post(url=url, headers=headers, params=query, data=body, verify=verify)
+            case Method.PUT:
+                return requests.put(url=url, headers=headers, params=query, data=body, verify=verify)
+            case Method.PATCH:
+                return requests.patch(url=url, headers=headers, params=query, data=body, verify=verify)
+            case _:
+                raise "The [{}] method is not currently supported".format(
+                    method)
 
 
 class TesterEngine:
@@ -71,10 +67,11 @@ class TesterEngine:
                         body=x.data,
                         verify=ws.verify
                     )
+                    x_status = x.verify(res)
                     if dumpNeed:
                         dump_res.websites[-1].modules[-1].apis.append(ApiDump(
-                            "{}-{}".format(m.apis.index(x), x.path), x, x.verify(res)))
-                        if x.verify(res):
+                            "{}-{}".format(m.apis.index(x), x.path), x, x_status))
+                        if x_status:
                             x_res = [i for i in x.notify(res) if not i is None]
                             m_res = [i for i in m.notify(res) if not i is None]
                             ws_res = [i for i in ws.notify(
@@ -100,9 +97,8 @@ class TesterEngine:
                             if not ws_fail is None:
                                 dump_res.websites[-1].hooks_results.append(
                                     ws_fail)
-
                     else:
-                        if x.verify(res):
+                        if x_status:
                             x.notify(res)
                             m.notify(res)
                             ws.notify(res)
