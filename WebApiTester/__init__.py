@@ -1,5 +1,6 @@
 from datetime import datetime
 import json
+import os
 import requests
 from requests import Response
 from typing import List, Dict
@@ -107,5 +108,7 @@ class TesterEngine:
                             m.fail(res)
                             ws.fail(res)
         if dumpNeed:
-            with open("{}.json".format(datetime.now().strftime("%Y-%m-%d %H-%M-%S")), "w") as f:
+            if not os.path.exists("./dumps"):
+                os.mkdir("./dumps")
+            with open("./dumps/{}.json".format(datetime.now().strftime("%Y-%m-%d %H-%M-%S")), "w") as f:
                 f.write(json.dumps(dict(dump_res), ensure_ascii=False))
