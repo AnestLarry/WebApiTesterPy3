@@ -43,7 +43,7 @@ class TesterEngine:
             r.update(d)
         return r
 
-    def start(self, dumpNeed: bool = False) -> None:
+    def start(self, dumpNeed: bool = False, random_dump_name: bool = False) -> None:
         dump_res = RuntimeDump(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         print("Tester Starting...")
         for ws in self.web_sites:
@@ -110,5 +110,8 @@ class TesterEngine:
         if dumpNeed:
             if not os.path.exists("./dumps"):
                 os.mkdir("./dumps")
-            with open("./dumps/{}.json".format(datetime.now().strftime("%Y-%m-%d %H-%M-%S")), "w") as f:
+            filename = __class__.__name__
+            if random_dump_name:
+                filename = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
+            with open("./dumps/{}.json".format(filename), "w") as f:
                 f.write(json.dumps(dict(dump_res), ensure_ascii=False))
