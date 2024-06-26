@@ -2,7 +2,7 @@ import json
 from WebApiTester.TestUnit import *
 import copy
 
-from WebApiTester.utils import not_empty
+from WebApiTester.utils import dumps_not_empty
 
 
 class DumpBase:
@@ -34,7 +34,7 @@ class ApiDump(DumpBase):
         yield from {
             "name": self.name,
             "full_path": self.full_path,
-            "content": {k: v for k, v in dict(self.content).items() if not_empty(v)},
+            "content": {k: v for k, v in dict(self.content).items() if dumps_not_empty(v)},
             "status": self.status,
             "hooks_results": self.hooks_results
         }.items()
@@ -55,8 +55,8 @@ class ModuleDump(DumpBase):
     def __iter__(self):
         yield from {
             "name": self.name,
-            "content": {k: v for k, v in dict(self.content).items() if not_empty(v)},
-            "apis": [{k: v for k, v in dict(api).items() if not_empty(v)} for api in self.apis],
+            "content": {k: v for k, v in dict(self.content).items() if dumps_not_empty(v)},
+            "apis": [{k: v for k, v in dict(api).items() if dumps_not_empty(v)} for api in self.apis],
             "hooks_results": self.hooks_results
         }.items()
 
@@ -76,8 +76,8 @@ class WebSiteDump(DumpBase):
     def __iter__(self):
         yield from {
             "name": self.name,
-            "content": {k: v for k, v in dict(self.content).items() if not_empty(v)},
-            "modules": [{k: v for k, v in dict(module).items() if not_empty(v)} for module in self.modules],
+            "content": {k: v for k, v in dict(self.content).items() if dumps_not_empty(v)},
+            "modules": [{k: v for k, v in dict(module).items() if dumps_not_empty(v)} for module in self.modules],
             "hooks_results": self.hooks_results
         }.items()
 
@@ -93,7 +93,7 @@ class RuntimeDump(DumpBase):
     def __iter__(self):
         yield from {
             "name": self.name,
-            "websites": [{k: v for k, v in dict(website).items() if not_empty(v)} for website in self.websites]
+            "websites": [{k: v for k, v in dict(website).items() if dumps_not_empty(v)} for website in self.websites]
         }.items()
 
     def __str__(self) -> str:

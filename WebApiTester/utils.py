@@ -3,7 +3,7 @@ from typing import Dict, Union
 from requests import Response
 
 
-def not_empty(x: any) -> bool:
+def dumps_not_empty(x: any) -> bool:
     if x is not None:
         if type(x) in [int, float, bool]:
             return True
@@ -12,8 +12,10 @@ def not_empty(x: any) -> bool:
     else:
         return False
 
-def status_code_eq_200(x: Response) -> bool:
+
+def verify_status_code_eq_200(x: Response) -> bool:
     return x.status_code == 200
+
 
 def hook_json_or_text(x: Response) -> Union[Dict, str, None]:
     try:

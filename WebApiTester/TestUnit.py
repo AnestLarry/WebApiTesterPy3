@@ -75,7 +75,7 @@ class Api(Unit):
         self.data = data
         self.description = description
         if verify is None:
-            self.verify = utils.status_code_eq_200
+            self.verify = utils.verify_status_code_eq_200
         else:
             self.verify = verify
 
