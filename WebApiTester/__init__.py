@@ -71,7 +71,7 @@ class TesterEngine:
                     x_status = x.verify(res)
                     if dumpNeed:
                         dump_res.websites[-1].modules[-1].apis.append(ApiDump(
-                            "{}-{}".format(m.apis.index(x), x.path), x, x_status))
+                            "{}-{}".format(m.apis.index(x), x.path), ws.path+m.path+x.path, x, x_status))
                         if x_status:
                             x_res = [i for i in x.notify(res) if not i is None]
                             m_res = [i for i in m.notify(res) if not i is None]

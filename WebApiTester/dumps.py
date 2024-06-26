@@ -3,6 +3,8 @@ from WebApiTester.TestUnit import *
 import copy
 
 from WebApiTester.utils import not_empty
+
+
 class DumpBase:
     def __str__(self) -> str:
         return json.dumps(dict(self))
@@ -16,12 +18,14 @@ class DumpBase:
 
 class ApiDump(DumpBase):
     name: str
+    full_path: str
     content: Api
     status: bool
     hooks_results: list[Union[str, Dict, None]] = []
 
-    def __init__(self, name: str, content: Module, status: bool) -> None:
+    def __init__(self, name: str, full_path: str, content: Module, status: bool) -> None:
         self.name = name
+        self.full_path = full_path
         self.content = content
         self.status = status
         self.hooks_results = []
@@ -29,6 +33,7 @@ class ApiDump(DumpBase):
     def __iter__(self):
         yield from {
             "name": self.name,
+            "full_path": self.full_path,
             "content": {k: v for k, v in dict(self.content).items() if not_empty(v)},
             "status": self.status,
             "hooks_results": self.hooks_results
