@@ -67,7 +67,10 @@ class Api(Unit):
         self.method = method
         self.headers = headers
         self.query = query
-        self.hooks = hooks
+        if len(hooks) == 0:
+            self.hooks = [utils.hook_json_or_text]
+        else:
+            self.hooks = hooks
         self.fail_callable = fail
         self.data = data
         self.description = description
