@@ -1,3 +1,5 @@
+# this project is achieved. please use another [ts-version web-api-tester](https://github.com/AnestLarry/WebApiTester) to instead.
+
 # WebApiTester
 
 A web API tester with easy use.
